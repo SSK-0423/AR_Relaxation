@@ -1,22 +1,13 @@
-//
-//  ViewController.swift
-//  AR_Contents
-//
-//  Created by 山本知仁 on 2022/12/18.
-//
-
 import UIKit
 import Metal
 import MetalKit
 import ARKit
 
-extension MTKView : RenderDestinationProvider {
-}
-
 class ViewController: UIViewController, MTKViewDelegate, ARSessionDelegate {
     
     var session: ARSession!
     var renderer: Renderer!
+    var planeAnchor: ARPlaneAnchor? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,13 +28,9 @@ class ViewController: UIViewController, MTKViewDelegate, ARSessionDelegate {
             }
             
             // Configure the renderer to draw to the view
-            renderer = Renderer(session: session, metalDevice: view.device!, renderDestination: view)
-            
-            renderer.drawRectResized(size: view.bounds.size)
+            renderer = Renderer(metalView: view, session: session)
+            renderer.mtkView(view, drawableSizeWillChange: view.drawableSize)
         }
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.handleTap(gestureRecognize:)))
-        view.addGestureRecognizer(tapGesture)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -51,6 +38,20 @@ class ViewController: UIViewController, MTKViewDelegate, ARSessionDelegate {
         
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
+        configuration.planeDetection = [.horizontal]
+        
+        // シーンデプス有効化
+        if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth){
+            configuration.frameSemantics.insert(.sceneDepth)
+        } else {
+            fatalError("このデバイスはScene Depthに対応していません")
+        }
+        // スムースシーンデプス有効化
+        if ARWorldTrackingConfiguration.supportsFrameSemantics(.smoothedSceneDepth) {
+            configuration.frameSemantics.insert(.smoothedSceneDepth)
+        } else {
+            fatalError("このデバイスはSmoothed Scene Depthに対応していません")
+        }
 
         // Run the view's session
         session.run(configuration)
@@ -63,48 +64,28 @@ class ViewController: UIViewController, MTKViewDelegate, ARSessionDelegate {
         session.pause()
     }
     
-    @objc
-    func handleTap(gestureRecognize: UITapGestureRecognizer) {
-        // Create anchor using the camera's current position
-        if let currentFrame = session.currentFrame {
-            
-            // Create a transform with a translation of 0.2 meters in front of the camera
-            var translation = matrix_identity_float4x4
-            translation.columns.3.z = -0.2
-            let transform = simd_mul(currentFrame.camera.transform, translation)
-            
-            // Add a new anchor to the session
-            let anchor = ARAnchor(transform: transform)
-            session.add(anchor: anchor)
-        }
-    }
-    
     // MARK: - MTKViewDelegate
     
     // Called whenever view changes orientation or layout is changed
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        renderer.drawRectResized(size: size)
+        renderer?.mtkView(view, drawableSizeWillChange: size)
     }
     
     // Called whenever the view needs to render
     func draw(in view: MTKView) {
-        renderer.update()
+        renderer.update(view: view, session: session)
     }
     
-    // MARK: - ARSessionDelegate
-    
-    func session(_ session: ARSession, didFailWithError error: Error) {
-        // Present an error message to the user
-        
-    }
-    
-    func sessionWasInterrupted(_ session: ARSession) {
-        // Inform the user that the session has been interrupted, for example, by presenting an overlay
-        
-    }
-    
-    func sessionInterruptionEnded(_ session: ARSession) {
-        // Reset tracking and/or remove existing anchors if consistent tracking is required
-        
+    func session(_ session: ARSession, didAdd anchors: [ARAnchor]) {
+        for anchor in anchors {
+            if let planeAnchor = anchor as? ARPlaneAnchor {
+                if self.planeAnchor != nil { return }
+                if planeAnchor.alignment == ARPlaneAnchor.Alignment.horizontal {
+                    print("水平面が検出されました")
+                    renderer.scene.createSceneWithHorizontalPlane(session: session, planeAnchor: planeAnchor)
+                }
+                self.planeAnchor = planeAnchor
+            }
+        }
     }
 }

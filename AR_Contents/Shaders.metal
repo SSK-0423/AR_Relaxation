@@ -1,10 +1,3 @@
-//
-//  Shaders.metal
-//  AR_Contents
-//
-//  Created by 山本知仁 on 2022/12/18.
-//
-
 #include <metal_stdlib>
 #include <simd/simd.h>
 
@@ -13,155 +6,220 @@
 
 using namespace metal;
 
-typedef struct {
-    float2 position [[attribute(kVertexAttributePosition)]];
-    float2 texCoord [[attribute(kVertexAttributeTexcoord)]];
-} ImageVertex;
-
-
-typedef struct {
+// YCbCr画像をRGB形式に変換
+struct QuadVertexOut
+{
     float4 position [[position]];
-    float2 texCoord;
-} ImageColorInOut;
-
-
-// Captured image vertex function
-vertex ImageColorInOut capturedImageVertexTransform(ImageVertex in [[stage_in]]) {
-    ImageColorInOut out;
-    
-    // Pass through the image vertex's position
-    out.position = float4(in.position, 0.0, 1.0);
-    
-    // Pass through the texture coordinate
-    out.texCoord = in.texCoord;
+    float2 uv;
+};
+constant float2 quadVertices[] = {
+    float2(-1, -1),
+    float2(-1,  1),
+    float2( 1,  1),
+    float2(-1, -1),
+    float2( 1,  1),
+    float2( 1, -1)
+};
+// YCbCr画像をRGB形式に変換
+struct ImagePlaneVertexIn {
+    float2 position [[attribute(0)]];
+    float2 uv       [[attribute(1)]];
+};
+struct ImagePlaneFragmentOut {
+    float4 color    [[color(0)]];
+    float depth     [[color(1)]];
+};
+vertex QuadVertexOut renderCapturedImageVertex(uint vid [[vertex_id]],
+                                               const ImagePlaneVertexIn input [[stage_in]])
+{
+    QuadVertexOut out;
+    out.position = float4(input.position,0.f,1.f);
+    out.uv = input.uv;
     
     return out;
 }
-
-// Captured image fragment function
-fragment float4 capturedImageFragmentShader(ImageColorInOut in [[stage_in]],
-                                            texture2d<float, access::sample> capturedImageTextureY [[ texture(kTextureIndexY) ]],
-                                            texture2d<float, access::sample> capturedImageTextureCbCr [[ texture(kTextureIndexCbCr) ]]) {
-    
-    constexpr sampler colorSampler(mip_filter::linear,
-                                   mag_filter::linear,
-                                   min_filter::linear);
+fragment ImagePlaneFragmentOut renderCapturedImageFragment(QuadVertexOut input [[stage_in]],
+                                                           texture2d<float,access::sample> textureY [[texture(ENCODE_YCBCR_TO_RGB_TEXTURE_INDEX_Y)]],
+                                                           texture2d<float,access::sample> textureCbCr
+                                                           [[texture(ENCODE_YCBCR_TO_RGB_TEXTURE_INDEX_CBCR)]],
+                                                           texture2d<float,access::sample> depthTexture
+                                                           [[texture(ENCODE_YCBCR_TO_RGB_TEXTURE_INDEX_DEPTH)]])
+{
+    constexpr sampler smp(mip_filter::linear,
+                          mag_filter::linear,
+                          min_filter::linear);
     
     const float4x4 ycbcrToRGBTransform = float4x4(
-        float4(+1.0000f, +1.0000f, +1.0000f, +0.0000f),
-        float4(+0.0000f, -0.3441f, +1.7720f, +0.0000f),
-        float4(+1.4020f, -0.7141f, +0.0000f, +0.0000f),
-        float4(-0.7010f, +0.5291f, -0.8860f, +1.0000f)
-    );
+                                                  float4(+1.0000f, +1.0000f, +1.0000f, +0.0000f),
+                                                  float4(+0.0000f, -0.3441f, +1.7720f, +0.0000f),
+                                                  float4(+1.4020f, -0.7141f, +0.0000f, +0.0000f),
+                                                  float4(-0.7010f, +0.5291f, -0.8860f, +1.0000f)
+                                                  );
+    float2 uv = input.uv;
+    // デバイスの姿勢によって処理内容を変える必要あり
+    //uv.x = 1.f - uv.x;
+    float4 ycbcr = float4(textureY.sample(smp, uv).r,textureCbCr.sample(smp, uv).rg,1.f);
+    float depth = depthTexture.sample(smp, uv).r;
     
-    // Sample Y and CbCr textures to get the YCbCr color at the given texture coordinate
-    float4 ycbcr = float4(capturedImageTextureY.sample(colorSampler, in.texCoord).r,
-                          capturedImageTextureCbCr.sample(colorSampler, in.texCoord).rg, 1.0);
+    ImagePlaneFragmentOut output;
+    output.color = ycbcrToRGBTransform * ycbcr;
+    output.depth = depth;
     
-    // Return converted RGB color
-    return ycbcrToRGBTransform * ycbcr;
+    return output;
 }
 
-
-typedef struct {
-    float3 position [[attribute(kVertexAttributePosition)]];
-    float2 texCoord [[attribute(kVertexAttributeTexcoord)]];
-    half3 normal    [[attribute(kVertexAttributeNormal)]];
-} Vertex;
-
-
-typedef struct {
-    float4 position [[position]];
-    float4 color;
-    half3  eyePosition;
-    half3  normal;
-} ColorInOut;
-
-
-// Anchor geometry vertex function
-vertex ColorInOut anchorGeometryVertexTransform(Vertex in [[stage_in]],
-                                                constant SharedUniforms &sharedUniforms [[ buffer(kBufferIndexSharedUniforms) ]],
-                                                constant InstanceUniforms *instanceUniforms [[ buffer(kBufferIndexInstanceUniforms) ]],
-                                                ushort vid [[vertex_id]],
-                                                ushort iid [[instance_id]]) {
-    ColorInOut out;
-    
-    // Make position a float4 to perform 4x4 matrix math on it
-    float4 position = float4(in.position, 1.0);
-    
-    float4x4 modelMatrix = instanceUniforms[iid].modelMatrix;
-    float4x4 modelViewMatrix = sharedUniforms.viewMatrix * modelMatrix;
-    
-    // Calculate the position of our vertex in clip space and output for clipping and rasterization
-    out.position = sharedUniforms.projectionMatrix * modelViewMatrix * position;
-    
-    // Color each face a different color
-    ushort colorID = vid / 4 % 6;
-    out.color = colorID == 0 ? float4(0.0, 1.0, 0.0, 1.0) // Right face
-              : colorID == 1 ? float4(1.0, 0.0, 0.0, 1.0) // Left face
-              : colorID == 2 ? float4(0.0, 0.0, 1.0, 1.0) // Top face
-              : colorID == 3 ? float4(1.0, 0.5, 0.0, 1.0) // Bottom face
-              : colorID == 4 ? float4(1.0, 1.0, 0.0, 1.0) // Back face
-              : float4(1.0, 1.0, 1.0, 1.0); // Front face
-    
-    // Calculate the position of our vertex in eye space
-    out.eyePosition = half3((modelViewMatrix * position).xyz);
-    
-    // Rotate our normals to world coordinates
-    float4 normal = modelMatrix * float4(in.normal.x, in.normal.y, in.normal.z, 0.0f);
-    out.normal = normalize(half3(normal.xyz));
+// スクリーン全体を覆う四角形を描画する
+vertex QuadVertexOut fullScreenQuadVertex(uint vid [[vertex_id]],
+                                          const ImagePlaneVertexIn input[[stage_in]])
+{
+    //float2 position = quadVertices[vid];
+    QuadVertexOut out;
+    out.position = float4(input.position,0,1);
+    out.uv = input.uv;
     
     return out;
 }
-
-// Anchor geometry fragment function
-fragment float4 anchorGeometryFragmentLighting(ColorInOut in [[stage_in]],
-                                               constant SharedUniforms &uniforms [[ buffer(kBufferIndexSharedUniforms) ]]) {
+// スクリーン全体を覆う四角形にレンダリング結果の画像をマッピングする
+fragment float4 fullScreenQuadFragment(QuadVertexOut input [[stage_in]],
+                                       constant SharedUniforms& uniforms
+                                       [[buffer(RENDER_SCREEN_BUFFER_INDEX_SHARED_UNIFORMS)]],
+                                       texture2d<float,access::sample> renderResult
+                                       [[texture(RENDER_SCREEN_TEXTURE_INDEX_RENDER_RESULT)]])
+{
+    constexpr sampler smp(mag_filter::linear,
+                          min_filter::linear,
+                          mip_filter::linear);
     
-    float3 normal = float3(in.normal);
+    float2 uv = float2(input.uv.x, 1.f - input.uv.y);
     
-    // Calculate the contribution of the directional light as a sum of diffuse and specular terms
-    float3 directionalContribution = float3(0);
-    {
-        // Light falls off based on how closely aligned the surface normal is to the light direction
-        float nDotL = saturate(dot(normal, -uniforms.directionalLightDirection));
-        
-        // The diffuse term is then the product of the light color, the surface material
-        // reflectance, and the falloff
-        float3 diffuseTerm = uniforms.directionalLightColor * nDotL;
-        
-        // Apply specular lighting...
-        
-        // 1) Calculate the halfway vector between the light direction and the direction they eye is looking
-        float3 halfwayVector = normalize(-uniforms.directionalLightDirection - float3(in.eyePosition));
-        
-        // 2) Calculate the reflection angle between our reflection vector and the eye's direction
-        float reflectionAngle = saturate(dot(normal, halfwayVector));
-        
-        // 3) Calculate the specular intensity by multiplying our reflection angle with our object's
-        //    shininess
-        float specularIntensity = saturate(powr(reflectionAngle, uniforms.materialShininess));
-        
-        // 4) Obtain the specular term by multiplying the intensity by our light's color
-        float3 specularTerm = uniforms.directionalLightColor * specularIntensity;
-        
-        // Calculate total contribution from this light is the sum of the diffuse and specular values
-        directionalContribution = diffuseTerm + specularTerm;
-    }
-    
-    // The ambient contribution, which is an approximation for global, indirect lighting, is
-    // the product of the ambient light intensity multiplied by the material's reflectance
-    float3 ambientContribution = uniforms.ambientLightColor;
-    
-    // Now that we have the contributions our light sources in the scene, we sum them together
-    // to get the fragment's lighting value
-    float3 lightContributions = ambientContribution + directionalContribution;
-    
-    // We compute the final color by multiplying the sample from our color maps by the fragment's
-    // lighting value
-    float3 color = in.color.rgb * lightContributions;
-    
-    // We use the color we just computed and the alpha channel of our
-    // colorMap for this fragment's alpha value
-    return float4(color, in.color.w);
+    return renderResult.sample(smp, input.uv);
 }
+
+fragment float4 postProcessFragment(QuadVertexOut input [[stage_in]],
+                                    constant SharedUniforms& uniforms
+                                    [[buffer(RENDER_SCREEN_BUFFER_INDEX_SHARED_UNIFORMS)]],
+                                    texture2d<float,access::sample> renderResult
+                                    [[texture(POST_PROCESS_TEXTURE_INDEX_RENDER_RESULT)]],
+                                    texture2d<float,access::sample> lidarDepth
+                                    [[texture(POST_PROCESS_TEXTURE_INDEX_LIDAR_DEPTH)]],
+                                    texture2d<float,access::sample> sky
+                                    [[texture(POST_PROCESS_TEXTURE_INDEX_SKY)]],
+                                    texture2d<float,access::sample> geometry
+                                    [[texture(POST_PROCESS_TEXTURE_INDEX_GEOMETRY)]])
+{
+    constexpr sampler smp(mag_filter::linear,
+                          min_filter::linear,
+                          mip_filter::linear);
+    
+    float2 uv = float2(input.uv.x, 1.f - input.uv.y);
+    
+    float4 color = renderResult.sample(smp, input.uv);
+    float4 skyColor = sky.sample(smp, input.uv);
+    float4 geometryColor = geometry.sample(smp, input.uv);
+    float depth = lidarDepth.sample(smp, input.uv).r;
+    if(geometryColor.a != 0) {
+        return geometryColor;
+    }
+    if(depth > 1 && skyColor.a != 0) {
+        return skyColor;
+    } else {
+        return color;
+    }
+}
+
+struct GeometryVertex
+{
+    float3 position [[attribute(0)]];
+    float3 normal   [[attribute(1)]];
+    float2 uv       [[attribute(2)]];
+};
+
+struct GeometryVertexOut
+{
+    float4 position [[position]];
+    float3 worldPosition;
+    float3 eyePosition;
+    float3 normal;
+    float2 uv;
+};
+
+struct GeometryFragmentOut
+{
+    float4 color        [[color(0)]];
+    float  depth        [[color(1)]];
+};
+
+vertex GeometryVertexOut geometryVertex(GeometryVertex input [[stage_in]],
+                                        uint vid [[vertex_id]],
+                                        uint iid [[instance_id]],
+                                        constant SharedUniforms& uniforms
+                                        [[buffer(RENDER_GEOMETRY_BUFFER_INDEX_SHARED_UNIFORMS)]],
+                                        constant GeometryUniforms& geometryUniforms
+                                        [[buffer(RENDER_GEOMETRY_BUFFER_INDEX_GEOMETRY_UNIFORMS)]])
+{
+    GeometryVertexOut output;
+    float4 position = float4(input.position,1.f);
+    float4 worldPosition = geometryUniforms.model * position;
+    output.position = uniforms.projection * uniforms.view * worldPosition;
+    output.worldPosition = worldPosition.xyz;
+    output.eyePosition = uniforms.eyePosition;
+    
+    float3 normal = (geometryUniforms.model * float4(input.normal,0.f)).xyz;
+    output.normal = normalize(normal);
+    
+    output.uv = input.uv;
+    
+    return output;
+};
+
+fragment GeometryFragmentOut geometryFragment(GeometryVertexOut input [[stage_in]],
+                                              constant SharedUniforms& uniforms
+                                              [[buffer(RENDER_GEOMETRY_BUFFER_INDEX_SHARED_UNIFORMS)]],
+                                              texture2d<float,access::sample> baseColor
+                                              [[texture(0)]])
+{
+    GeometryFragmentOut output;
+    constexpr sampler smp(mip_filter::linear,
+                          mag_filter::linear,
+                          min_filter::linear);
+    // ランバートシェーディング
+    float3 color = baseColor.sample(smp, input.uv).rgb;
+    float3 lightColor = float3(1,1,1);
+    float3 lightDir = normalize(float3(1,-1,-1));
+    float3 diffuse = color * lightColor * saturate(dot(input.normal,-lightDir));
+    
+    float3 ambientColor = float3(0.5,0.5,0.5);
+    float3 ambientIntensity = float3(1,1,1);
+    float3 ambient = ambientColor * ambientIntensity;
+    float3 phong = diffuse + ambient;
+    
+    // 深度
+    float depth = length(input.worldPosition - input.eyePosition);
+    
+    // depthNormal
+    output.color = float4(phong,1.f);
+    output.depth = depth;
+    
+    return output;
+};
+
+fragment GeometryFragmentOut skyBoxFragment(GeometryVertexOut input [[stage_in]],
+                                              constant SharedUniforms& uniforms
+                                              [[buffer(RENDER_GEOMETRY_BUFFER_INDEX_SHARED_UNIFORMS)]],
+                                              texture2d<float,access::sample> baseColor
+                                              [[texture(0)]])
+{
+    GeometryFragmentOut output;
+    constexpr sampler smp(mip_filter::linear,
+                          mag_filter::linear,
+                          min_filter::linear);
+    float3 color = baseColor.sample(smp, input.uv).rgb;
+    // 深度
+    float depth = length(input.worldPosition - input.eyePosition);
+    
+    // depthNormal
+    output.color = float4(color,1.f);
+    output.depth = depth;
+    
+    return output;
+};

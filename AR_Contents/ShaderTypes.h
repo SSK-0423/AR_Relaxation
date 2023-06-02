@@ -1,62 +1,67 @@
-//
-//  ShaderTypes.h
-//  AR_Contents
-//
-//  Created by 山本知仁 on 2022/12/18.
-//
-
-//
-//  Header containing types and enum constants shared between Metal shaders and C/ObjC source
-//
 #ifndef ShaderTypes_h
 #define ShaderTypes_h
 
 #include <simd/simd.h>
 
+#ifdef __METAL_VERSION__
+#define NS_ENUM(_type, _name) enum _name : _type _name; enum _name : _type
+#define NSInteger metal::int32_t
+#else
+#import <Foundation/Foundation.h>
+#endif
 
-// Buffer index values shared between shader and C code to ensure Metal shader buffer inputs match
-//   Metal API buffer set calls
-typedef enum BufferIndices {
-    kBufferIndexMeshPositions    = 0,
-    kBufferIndexMeshGenerics     = 1,
-    kBufferIndexInstanceUniforms = 2,
-    kBufferIndexSharedUniforms   = 3
-} BufferIndices;
+struct SharedUniforms {
+    matrix_float4x4 view;
+    matrix_float4x4 projection;
+    vector_float3   eyePosition;
+    unsigned int width;
+    unsigned int height;
+};
 
-// Attribute index values shared between shader and C code to ensure Metal shader vertex
-//   attribute indices match the Metal API vertex descriptor attribute indices
-typedef enum VertexAttributes {
-    kVertexAttributePosition  = 0,
-    kVertexAttributeTexcoord  = 1,
-    kVertexAttributeNormal    = 2
-} VertexAttributes;
+struct GeometryUniforms {
+    matrix_float4x4 model;
+};
 
-// Texture index values shared between shader and C code to ensure Metal shader texture indices
-//   match indices of Metal API texture set calls
-typedef enum TextureIndices {
-    kTextureIndexColor    = 0,
-    kTextureIndexY        = 1,
-    kTextureIndexCbCr     = 2
-} TextureIndices;
+// encodeYCrCbToRGBシェーダー関連
+typedef NS_ENUM(NSInteger, ENCODE_YCBCR_TO_RGB_TEXTURE_INDEX)
+{
+    ENCODE_YCBCR_TO_RGB_TEXTURE_INDEX_Y         = 0,
+    ENCODE_YCBCR_TO_RGB_TEXTURE_INDEX_CBCR      = 1,
+    ENCODE_YCBCR_TO_RGB_TEXTURE_INDEX_DEPTH     = 2,
+};
+typedef NS_ENUM(NSInteger, ENCODE_YCBCR_TO_RGB_BUFFER_INDEX)
+{
+    ENCODE_YCBCR_TO_RGB_BUFFER_INDEX_VERTEX = 0,
+};
+// fullScreenQuadシェーダー関連
+typedef NS_ENUM(NSInteger, RENDER_SCREEN_BUFFER_INDEX)
+{
+    RENDER_SCREEN_BUFFER_INDEX_SHARED_UNIFORMS = 0,
+};
+typedef NS_ENUM(NSInteger, RENDER_SCREEN_TEXTURE_INDEX)
+{
+    RENDER_SCREEN_TEXTURE_INDEX_RENDER_RESULT   = 0,
+};
+typedef NS_ENUM(NSInteger, POST_PROCESS_TEXTURE_INDEX)
+{
+    POST_PROCESS_TEXTURE_INDEX_RENDER_RESULT    = 0,
+    POST_PROCESS_TEXTURE_INDEX_LIDAR_DEPTH      = 1,
+    POST_PROCESS_TEXTURE_INDEX_SKY              = 2,
+    POST_PROCESS_TEXTURE_INDEX_GEOMETRY         = 3,
+};
 
-// Structure shared between shader and C code to ensure the layout of shared uniform data accessed in
-//    Metal shaders matches the layout of uniform data set in C code
-typedef struct {
-    // Camera Uniforms
-    matrix_float4x4 projectionMatrix;
-    matrix_float4x4 viewMatrix;
-    
-    // Lighting Properties
-    vector_float3 ambientLightColor;
-    vector_float3 directionalLightDirection;
-    vector_float3 directionalLightColor;
-    float materialShininess;
-} SharedUniforms;
+typedef NS_ENUM(NSInteger, RENDER_GEOMETRY_TEXTURE_INDEX)
+{
+    RENDER_GEOMETRY_TEXTURE_INDEX_BASECOLOR     = 0,
+};
 
-// Structure shared between shader and C code to ensure the layout of instance uniform data accessed in
-//    Metal shaders matches the layout of uniform data set in C code
-typedef struct {
-    matrix_float4x4 modelMatrix;
-} InstanceUniforms;
+typedef NS_ENUM(NSInteger, RENDER_GEOMETRY_BUFFER_INDEX)
+{
+    RENDER_GEOMETRY_BUFFER_INDEX_POSITION                   = 0,
+    RENDER_GEOMETRY_BUFFER_INDEX_NORMAL                     = 1,
+    RENDER_GEOMETRY_BUFFER_INDEX_UV                         = 2,
+    RENDER_GEOMETRY_BUFFER_INDEX_SHARED_UNIFORMS            = 3,
+    RENDER_GEOMETRY_BUFFER_INDEX_GEOMETRY_UNIFORMS          = 4,
+};
 
 #endif /* ShaderTypes_h */

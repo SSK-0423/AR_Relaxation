@@ -9,11 +9,25 @@
 /* Begin PBXBuildFile section */
 		5207EC90294E1739004FE513 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5207EC8F294E1739004FE513 /* AppDelegate.swift */; };
 		5207EC92294E1739004FE513 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 5207EC91294E1739004FE513 /* Shaders.metal */; };
-		5207EC95294E1739004FE513 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5207EC94294E1739004FE513 /* Renderer.swift */; };
 		5207EC97294E1739004FE513 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5207EC96294E1739004FE513 /* ViewController.swift */; };
 		5207EC9A294E1739004FE513 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5207EC98294E1739004FE513 /* Main.storyboard */; };
 		5207EC9C294E173A004FE513 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5207EC9B294E173A004FE513 /* Assets.xcassets */; };
 		5207EC9F294E173A004FE513 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5207EC9D294E173A004FE513 /* LaunchScreen.storyboard */; };
+		5207ECA8294E219E004FE513 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5207ECA7294E219E004FE513 /* Renderer.swift */; };
+		5207ECAA294E21E1004FE513 /* TextureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5207ECA9294E21E1004FE513 /* TextureController.swift */; };
+		5207ECAC294E22A4004FE513 /* RenderPass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5207ECAB294E22A4004FE513 /* RenderPass.swift */; };
+		5207ECAE294E2312004FE513 /* RenderCapturedImagePass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5207ECAD294E2312004FE513 /* RenderCapturedImagePass.swift */; };
+		5207ECB0294E26A0004FE513 /* RenderScreenPass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5207ECAF294E26A0004FE513 /* RenderScreenPass.swift */; };
+		5207ECB2294E29AB004FE513 /* ARScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5207ECB1294E29AB004FE513 /* ARScene.swift */; };
+		5207ECB4294E2BE2004FE513 /* PostProcessPass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5207ECB3294E2BE2004FE513 /* PostProcessPass.swift */; };
+		52B6B303295041C200D21FB7 /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B6B302295041C200D21FB7 /* Geometry.swift */; };
+		52B6B3072950439900D21FB7 /* Material.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B6B3062950439900D21FB7 /* Material.swift */; };
+		52B6B309295043C500D21FB7 /* Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B6B308295043C500D21FB7 /* Transform.swift */; };
+		52B6B30C295043FF00D21FB7 /* simd_float4x4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B6B30B295043FF00D21FB7 /* simd_float4x4.swift */; };
+		52B6B30E2950441500D21FB7 /* simd_float4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B6B30D2950441500D21FB7 /* simd_float4.swift */; };
+		52B6B3102950449A00D21FB7 /* RenderGeometryPass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B6B30F2950449A00D21FB7 /* RenderGeometryPass.swift */; };
+		52B6B312295044F600D21FB7 /* MTLVertexDescriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B6B311295044F600D21FB7 /* MTLVertexDescriptor.swift */; };
+		52B6B314295061F900D21FB7 /* RenderSkyBoxPass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B6B313295061F900D21FB7 /* RenderSkyBoxPass.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,12 +35,26 @@
 		5207EC8F294E1739004FE513 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5207EC91294E1739004FE513 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		5207EC93294E1739004FE513 /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
-		5207EC94294E1739004FE513 /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		5207EC96294E1739004FE513 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		5207EC99294E1739004FE513 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		5207EC9B294E173A004FE513 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5207EC9E294E173A004FE513 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5207ECA0294E173A004FE513 /* AR_Contents-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AR_Contents-Bridging-Header.h"; sourceTree = "<group>"; };
+		5207ECA7294E219E004FE513 /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
+		5207ECA9294E21E1004FE513 /* TextureController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextureController.swift; sourceTree = "<group>"; };
+		5207ECAB294E22A4004FE513 /* RenderPass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderPass.swift; sourceTree = "<group>"; };
+		5207ECAD294E2312004FE513 /* RenderCapturedImagePass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderCapturedImagePass.swift; sourceTree = "<group>"; };
+		5207ECAF294E26A0004FE513 /* RenderScreenPass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderScreenPass.swift; sourceTree = "<group>"; };
+		5207ECB1294E29AB004FE513 /* ARScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARScene.swift; sourceTree = "<group>"; };
+		5207ECB3294E2BE2004FE513 /* PostProcessPass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostProcessPass.swift; sourceTree = "<group>"; };
+		52B6B302295041C200D21FB7 /* Geometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
+		52B6B3062950439900D21FB7 /* Material.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Material.swift; sourceTree = "<group>"; };
+		52B6B308295043C500D21FB7 /* Transform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transform.swift; sourceTree = "<group>"; };
+		52B6B30B295043FF00D21FB7 /* simd_float4x4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = simd_float4x4.swift; sourceTree = "<group>"; };
+		52B6B30D2950441500D21FB7 /* simd_float4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = simd_float4.swift; sourceTree = "<group>"; };
+		52B6B30F2950449A00D21FB7 /* RenderGeometryPass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderGeometryPass.swift; sourceTree = "<group>"; };
+		52B6B311295044F600D21FB7 /* MTLVertexDescriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTLVertexDescriptor.swift; sourceTree = "<group>"; };
+		52B6B313295061F900D21FB7 /* RenderSkyBoxPass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderSkyBoxPass.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,16 +88,62 @@
 			isa = PBXGroup;
 			children = (
 				5207EC8F294E1739004FE513 /* AppDelegate.swift */,
+				5207EC96294E1739004FE513 /* ViewController.swift */,
 				5207EC91294E1739004FE513 /* Shaders.metal */,
 				5207EC93294E1739004FE513 /* ShaderTypes.h */,
-				5207EC94294E1739004FE513 /* Renderer.swift */,
-				5207EC96294E1739004FE513 /* ViewController.swift */,
 				5207EC98294E1739004FE513 /* Main.storyboard */,
 				5207EC9B294E173A004FE513 /* Assets.xcassets */,
 				5207EC9D294E173A004FE513 /* LaunchScreen.storyboard */,
 				5207ECA0294E173A004FE513 /* AR_Contents-Bridging-Header.h */,
+				5207ECA6294E2182004FE513 /* RenderEngine */,
 			);
 			path = AR_Contents;
+			sourceTree = "<group>";
+		};
+		5207ECA6294E2182004FE513 /* RenderEngine */ = {
+			isa = PBXGroup;
+			children = (
+				52B6B30A295043E100D21FB7 /* Extensions */,
+				52B6B3052950423100D21FB7 /* Graphics */,
+				5207ECB5294E2C74004FE513 /* RenderPass */,
+				5207ECA7294E219E004FE513 /* Renderer.swift */,
+				5207ECA9294E21E1004FE513 /* TextureController.swift */,
+				5207ECB1294E29AB004FE513 /* ARScene.swift */,
+			);
+			path = RenderEngine;
+			sourceTree = "<group>";
+		};
+		5207ECB5294E2C74004FE513 /* RenderPass */ = {
+			isa = PBXGroup;
+			children = (
+				5207ECAB294E22A4004FE513 /* RenderPass.swift */,
+				5207ECAD294E2312004FE513 /* RenderCapturedImagePass.swift */,
+				5207ECAF294E26A0004FE513 /* RenderScreenPass.swift */,
+				52B6B30F2950449A00D21FB7 /* RenderGeometryPass.swift */,
+				5207ECB3294E2BE2004FE513 /* PostProcessPass.swift */,
+				52B6B313295061F900D21FB7 /* RenderSkyBoxPass.swift */,
+			);
+			path = RenderPass;
+			sourceTree = "<group>";
+		};
+		52B6B3052950423100D21FB7 /* Graphics */ = {
+			isa = PBXGroup;
+			children = (
+				52B6B302295041C200D21FB7 /* Geometry.swift */,
+				52B6B3062950439900D21FB7 /* Material.swift */,
+				52B6B308295043C500D21FB7 /* Transform.swift */,
+			);
+			path = Graphics;
+			sourceTree = "<group>";
+		};
+		52B6B30A295043E100D21FB7 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				52B6B30B295043FF00D21FB7 /* simd_float4x4.swift */,
+				52B6B30D2950441500D21FB7 /* simd_float4.swift */,
+				52B6B311295044F600D21FB7 /* MTLVertexDescriptor.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -143,9 +217,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5207ECB0294E26A0004FE513 /* RenderScreenPass.swift in Sources */,
+				5207ECAC294E22A4004FE513 /* RenderPass.swift in Sources */,
+				5207ECB4294E2BE2004FE513 /* PostProcessPass.swift in Sources */,
+				52B6B303295041C200D21FB7 /* Geometry.swift in Sources */,
+				52B6B312295044F600D21FB7 /* MTLVertexDescriptor.swift in Sources */,
+				52B6B309295043C500D21FB7 /* Transform.swift in Sources */,
+				52B6B3072950439900D21FB7 /* Material.swift in Sources */,
+				52B6B3102950449A00D21FB7 /* RenderGeometryPass.swift in Sources */,
 				5207EC92294E1739004FE513 /* Shaders.metal in Sources */,
-				5207EC95294E1739004FE513 /* Renderer.swift in Sources */,
+				5207ECAE294E2312004FE513 /* RenderCapturedImagePass.swift in Sources */,
 				5207EC97294E1739004FE513 /* ViewController.swift in Sources */,
+				5207ECB2294E29AB004FE513 /* ARScene.swift in Sources */,
+				52B6B314295061F900D21FB7 /* RenderSkyBoxPass.swift in Sources */,
+				5207ECAA294E21E1004FE513 /* TextureController.swift in Sources */,
+				5207ECA8294E219E004FE513 /* Renderer.swift in Sources */,
+				52B6B30E2950441500D21FB7 /* simd_float4.swift in Sources */,
+				52B6B30C295043FF00D21FB7 /* simd_float4x4.swift in Sources */,
 				5207EC90294E1739004FE513 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -302,9 +390,7 @@
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "arkit metal";
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationLandscapeRight;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationLandscapeRight;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -335,9 +421,7 @@
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "arkit metal";
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationLandscapeRight;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationLandscapeRight;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

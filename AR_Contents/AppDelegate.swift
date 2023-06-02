@@ -1,10 +1,3 @@
-//
-//  AppDelegate.swift
-//  AR_Contents
-//
-//  Created by 山本知仁 on 2022/12/18.
-//
-
 import UIKit
 
 @main
